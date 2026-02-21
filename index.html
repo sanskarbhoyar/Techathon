@@ -28,7 +28,7 @@
 <!-- ═══════════ HERO ═══════════ -->
 <section class="hero">
   <div class="hero-text">
-    <div class="hero-tag">🌍 Hackathon 2025 · Smart Cities · AI-Powered</div>
+    <div class="hero-tag">🌍 Techathon 2026 · Smart Cities · Waste Management</div>
     <h1 class="hero-title">Snap. <span class="accent">AI Classifies.</span><br/>Dispose <span class="accent">Right.</span></h1>
     <p class="hero-sub">Point your camera at any waste item — AI identifies it in seconds, auto-tags your GPS location, and tells you exactly which bin it belongs in.</p>
     <div class="hero-actions">
@@ -62,8 +62,8 @@
     </div>
     <div class="step-card">
       <div class="step-num">02</div>
-      <h3>🤖 AI Classifies</h3>
-      <p>AI Vision analyzes the image and returns the waste type, bin, reason, and disposal tip in seconds.</p>
+      <h3>🔍 Type & Classify</h3>
+      <p>Type the item name — the database instantly identifies the correct bin, reason, and disposal tip.</p>
     </div>
     <div class="step-card">
       <div class="step-num">03</div>
@@ -82,14 +82,8 @@
      FEATURE 1 — AI PHOTO SCANNER
 ═══════════════════════════════════════ -->
 <section class="ai-scan-section" id="ai-scan">
-  <h2 class="section-title">📸 AI <span class="accent">Photo Scanner</span></h2>
-  <p class="section-sub">Point your camera at any waste item — AI classifies it instantly.</p>
-
-  <!-- API Notice bar -->
-  <div class="api-notice hidden" id="apiNotice">
-    ⚠️ AI scanning requires an Anthropic API key.
-    <button class="btn-inline" id="setKeyBtn">Add Key →</button>
-  </div>
+  <h2 class="section-title">📸 <span class="accent">Photo Scanner</span></h2>
+  <p class="section-sub">Snap or upload a photo, type the item name, and get instant disposal guidance — no API key needed.</p>
 
   <div class="ai-scan-box">
 
@@ -135,58 +129,67 @@
       </div>
     </div>
 
-    <!-- STEP 3: Preview -->
+    <!-- STEP 3: Preview + item name input -->
     <div class="cam-step hidden" id="camStep3">
       <div class="preview-wrap">
         <img id="previewImg" src="" alt="Captured waste item"/>
-        <div class="analyzing-overlay hidden" id="analyzingOverlay">
-          <div class="ai-pulse"></div>
-          <div class="ai-pulse-label">🤖 AI is analyzing…</div>
+      </div>
+      <div class="photo-item-entry">
+        <label for="photoItemInput" class="photo-item-label">✏️ What item is this? Type to classify:</label>
+        <div class="photo-item-row">
+          <input type="text" id="photoItemInput" placeholder="e.g. plastic bottle, battery, banana peel…" autocomplete="off"/>
+          <button class="btn btn-primary" id="analyzeBtn">🔍 Classify</button>
         </div>
+        <p class="cam-hint">💡 Type a keyword — partial names like "bottle", "phone", "battery" also work!</p>
       </div>
       <div class="preview-actions">
-        <button class="btn btn-primary" id="analyzeBtn">🤖 Classify with AI</button>
-        <button class="btn btn-ghost"   id="retakeBtn">🔄 Retake Photo</button>
+        <button class="btn btn-ghost" id="retakeBtn">🔄 Retake Photo</button>
       </div>
     </div>
 
-    <!-- STEP 4: AI Result -->
+    <!-- STEP 4: Result -->
     <div class="cam-step hidden" id="camStep4">
       <div class="ai-result-card">
 
         <div class="ai-result-top">
-          <span class="ai-badge-pill">🤖 AI · Auto-Classified</span>
-          <span class="ai-confidence-pill" id="aiConfidencePill">● High Confidence</span>
+          <span class="ai-badge-pill">📸 Photo · Classified</span>
+          <span class="ai-confidence-pill" id="aiConfidencePill">● Database Match</span>
         </div>
 
         <div class="ai-result-main">
           <img id="aiThumb" src="" alt="Classified item" class="ai-thumb"/>
           <div class="ai-result-info">
-            <div class="ai-item-name" id="aiItemName">Plastic Bottle</div>
+            <div class="ai-item-name" id="aiItemName">Item Name</div>
             <div class="ai-bin-tag"   id="aiBinTag">🔵 Dry / Recyclable Bin</div>
             <span class="result-badge badge-dry ai-result-badge" id="aiResultBadge">DRY</span>
           </div>
         </div>
 
-        <div class="ai-description" id="aiDescription">Loading description…</div>
-        <div class="ai-tip-box"     id="aiTipBox">💡 Tip: Loading…</div>
+        <div class="ai-description" id="aiDescription"></div>
+        <div class="ai-tip-box"     id="aiTipBox"></div>
 
-        <!-- ══════════════════════════════
-             FEATURE 2 — GPS AUTO-TAG
-        ══════════════════════════════ -->
+        <!-- Unknown item voting (shown only when item not in DB) -->
+        <div class="unknown-card hidden" id="photoUnknownBlock">
+          <p>Help us grow the database — vote for the correct bin:</p>
+          <div class="bin-vote-group">
+            <button class="bin-vote photo-bin-vote" data-bin="wet">🟢 Wet</button>
+            <button class="bin-vote photo-bin-vote" data-bin="dry">🔵 Dry</button>
+            <button class="bin-vote photo-bin-vote" data-bin="hazardous">🔴 Hazardous</button>
+            <button class="bin-vote photo-bin-vote" data-bin="ewaste">🟡 E-Waste</button>
+          </div>
+          <p class="vote-thanks hidden" id="photoVoteThanks">🎉 Thanks! +5 XP for contributing!</p>
+        </div>
+
+        <!-- GPS Auto-Tag panel -->
         <div class="gps-panel">
           <div class="gps-panel-header">
             <span>📍 Disposal Location</span>
             <button class="gps-refresh-btn" id="gpsRefreshBtn">🔄 Refresh GPS</button>
           </div>
-
-          <!-- Detecting state -->
           <div class="gps-state gps-detecting hidden" id="gpsDetecting">
             <div class="gps-spinner"></div>
             <span>Acquiring GPS signal…</span>
           </div>
-
-          <!-- Success state -->
           <div class="gps-state gps-result hidden" id="gpsResult">
             <div class="gps-address-row">
               <span class="gps-pin">📍</span>
@@ -199,8 +202,6 @@
               🗺️ Open in Maps
             </a>
           </div>
-
-          <!-- Denied state -->
           <div class="gps-state gps-denied hidden" id="gpsDenied">
             <span>⚠️ Location access denied.</span>
             <button class="btn-inline" id="gpsEnableBtn">Try Again</button>
@@ -333,7 +334,7 @@
         <div class="badge locked" title="5 dry items">♻️</div>
         <div class="badge locked" title="5 wet items">🌿</div>
         <div class="badge locked" title="500 XP">🏆</div>
-        <div class="badge locked" title="5 AI scans">🤖</div>
+        <div class="badge locked" title="5 photo scans">📸</div>
         <div class="badge locked" title="3 GPS reports">📍</div>
       </div>
     </div>
@@ -388,8 +389,8 @@
 <!-- ═══════════ FOOTER ═══════════ -->
 <footer class="footer">
   <div class="footer-logo">♻️ WasteWise</div>
-  <p>Built for Hackathon 2025 · Made with 💚 by First-Year Engineers</p>
-  <p class="footer-stack">HTML · CSS · Vanilla JS · AI Vision · Geolocation API · OpenStreetMap</p>
+  <p>Built for Techathon 2026 · Made with 💚 by First-Year Engineers</p>
+  <p class="footer-stack">HTML · CSS · Vanilla JS · Geolocation API · OpenStreetMap</p>
 </footer>
 
 <!-- Overlays -->
@@ -404,19 +405,6 @@
   </div>
 </div>
 
-<div class="popup-overlay hidden" id="apiKeyModal">
-  <div class="popup-box api-key-box">
-    <div class="popup-icon">🔑</div>
-    <h3>Anthropic API Key</h3>
-    <p>Required for AI photo classification. Stored only in your browser — never uploaded elsewhere.</p>
-    <input type="password" id="apiKeyInput" placeholder="sk-ant-api03-…" class="api-key-input"/>
-    <div class="api-key-actions">
-      <button class="btn btn-primary" id="saveApiKeyBtn">💾 Save &amp; Enable AI</button>
-      <button class="btn btn-ghost"   id="skipApiKeyBtn">Skip (Text Mode Only)</button>
-    </div>
-    <p class="api-key-note">Get a free key at <strong>console.anthropic.com</strong></p>
-  </div>
-</div>
 
 <script src="script.js"></script>
 </body>

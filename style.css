@@ -372,3 +372,35 @@ section,header,footer{position:relative;z-index:1}
   .header{padding:.8rem 1rem}
   .ai-scan-box{padding:1.2rem}
 }
+
+/* ── Photo item name entry (Step 3) ── */
+.photo-item-entry {
+  margin: 1.2rem 0 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.photo-item-label {
+  font-size: 0.95rem;
+  color: var(--text-muted, #aaa);
+  font-weight: 500;
+}
+.photo-item-row {
+  display: flex;
+  gap: 0.6rem;
+}
+.photo-item-row input {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  border: 1.5px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.06);
+  color: #fff;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.photo-item-row input:focus {
+  border-color: var(--accent, #4caf7d);
+}
+.photo-item-row input::placeholder { color: #666; }

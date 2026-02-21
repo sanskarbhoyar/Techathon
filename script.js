@@ -1,25 +1,25 @@
 /* ============================================================
-   WasteWise v2 – script.js
+   WasteWise v2 – script.js  (No-AI Build)
 
-   NEW FEATURES:
-   1. AI PHOTO CLASSIFICATION
+   FEATURES:
+   1. PHOTO + TEXT CLASSIFIER
       - Open live camera OR upload image from gallery
       - Animated scan-frame viewfinder with laser line
-      - Sends image to Vision API (claude-sonnet-4-20250514)
-      - Returns: item name, bin type, reason, tip, confidence level
-      - Earn 15 XP for every AI scan confirmed
+      - User sees their photo, then types the item name
+      - Classified instantly from local WASTE_DB — no API needed
+      - Returns: bin type, reason, tip — earn 15 XP on confirm
 
    2. GPS AUTO-TAG & REVERSE GEOCODING
       - navigator.geolocation grabs lat/lon (no typing needed)
       - OpenStreetMap Nominatim converts coords → readable address
-      - Auto-triggers after AI result appears
+      - Auto-triggers after result appears
       - Also used in pickup request form — one click fills address
       - Shows coords, accuracy, and "Open in Maps" link
       - Geo-tagged confirmations earn the "Location Hero" badge
    ============================================================ */
 
 // ─────────────────────────────────────────────────────────────
-// SECTION 1: WASTE DATABASE (for text classifier)
+// SECTION 1: WASTE DATABASE
 // ─────────────────────────────────────────────────────────────
 const WASTE_DB = {
   // ── WET / ORGANIC ──
@@ -99,16 +99,16 @@ const BIN_META = {
 // SECTION 2: GAME STATE (persisted in localStorage)
 // ─────────────────────────────────────────────────────────────
 let state = JSON.parse(localStorage.getItem("ww_state_v2") || "null") || {
-  xp:         0,
-  streak:     1,
-  items:      0,
-  co2:        0,
-  todayCount: 0,
-  lastDate:   new Date().toDateString(),
-  bins:       { wet:0, dry:0, haz:0, ewaste:0 },
-  badges:     [],
-  aiScans:    0,   // counts AI-photo confirmations
-  geoReports: 0,   // counts GPS-tagged confirmations
+  xp:          0,
+  streak:      1,
+  items:       0,
+  co2:         0,
+  todayCount:  0,
+  lastDate:    new Date().toDateString(),
+  bins:        { wet:0, dry:0, haz:0, ewaste:0 },
+  badges:      [],
+  photoScans:  0,   // counts photo-scan confirmations
+  geoReports:  0,   // counts GPS-tagged confirmations
 };
 function saveState() { localStorage.setItem("ww_state_v2", JSON.stringify(state)); }
 
@@ -139,14 +139,14 @@ function getLevelProgress(xp) {
 // SECTION 4: BADGES
 // ─────────────────────────────────────────────────────────────
 const BADGE_DEFS = [
-  { id:"first",    icon:"🌱", name:"First Step",      check: s => s.items >= 1 },
-  { id:"eco10",    icon:"⚔️", name:"Eco Warrior",     check: s => s.items >= 10 },
-  { id:"streak7",  icon:"👑", name:"Streak King",     check: s => s.streak >= 7 },
-  { id:"recycle5", icon:"♻️", name:"Recycler",        check: s => s.bins.dry >= 5 },
-  { id:"compost5", icon:"🌿", name:"Composter",       check: s => s.bins.wet >= 5 },
-  { id:"xp500",    icon:"🏆", name:"Top Contributor", check: s => s.xp >= 500 },
-  { id:"aiscan5",  icon:"🤖", name:"AI Scanner",      check: s => s.aiScans >= 5 },
-  { id:"geo3",     icon:"📍", name:"Location Hero",   check: s => s.geoReports >= 3 },
+  { id:"first",    icon:"🌱", name:"First Step",      check: s => s.items >= 1       },
+  { id:"eco10",    icon:"⚔️", name:"Eco Warrior",     check: s => s.items >= 10      },
+  { id:"streak7",  icon:"👑", name:"Streak King",     check: s => s.streak >= 7      },
+  { id:"recycle5", icon:"♻️", name:"Recycler",        check: s => s.bins.dry >= 5    },
+  { id:"compost5", icon:"🌿", name:"Composter",       check: s => s.bins.wet >= 5    },
+  { id:"xp500",    icon:"🏆", name:"Top Contributor", check: s => s.xp >= 500        },
+  { id:"photo5",   icon:"📸", name:"Photo Scanner",   check: s => s.photoScans >= 5  },
+  { id:"geo3",     icon:"📍", name:"Location Hero",   check: s => s.geoReports >= 3  },
 ];
 
 function checkBadges() {
@@ -185,10 +185,9 @@ function updateDashboard() {
   document.getElementById("dashLevel").textContent  = getLevel(state.xp).name;
   document.getElementById("levelBar").style.width   = getLevelProgress(state.xp) + "%";
 
-  // Update bar chart
   const bins   = state.bins;
   const maxBin = Math.max(1, bins.wet, bins.dry, bins.haz, bins.ewaste);
-  const h = v => (v / maxBin * 80) + "px";
+  const h      = v => (v / maxBin * 80) + "px";
   document.getElementById("barWet").style.height = h(bins.wet);
   document.getElementById("barDry").style.height = h(bins.dry);
   document.getElementById("barHaz").style.height = h(bins.haz);
@@ -208,29 +207,25 @@ function addXP(amount, msg) {
   saveState();
 }
 
-// Called whenever user confirms disposal (text or AI)
-function logDisposal(bin, co2, isAI = false) {
+// Called whenever user confirms disposal (text or photo scan)
+function logDisposal(bin, co2, isPhoto = false) {
   state.items++;
   state.bins[bin] = (state.bins[bin] || 0) + 1;
   state.co2 += co2;
 
-  // Streak tracking
   const today = new Date().toDateString();
   if (state.lastDate !== today) {
-    state.lastDate  = today;
+    state.lastDate   = today;
     state.todayCount = 0;
     state.streak++;
   }
   state.todayCount++;
 
-  // AI-specific tracking
-  if (isAI) state.aiScans++;
+  if (isPhoto) state.photoScans++;
 
-  // XP: AI scans give 15 XP, text gives 10 XP; streak bonus +5
-  const baseXP = isAI ? 15 : 10;
-  addXP(baseXP + (state.streak > 1 ? 5 : 0), isAI ? "AI scan confirmed! 🤖" : "Great disposal! 🌿");
+  const baseXP = isPhoto ? 15 : 10;
+  addXP(baseXP + (state.streak > 1 ? 5 : 0), isPhoto ? "Photo scan confirmed! 📸" : "Great disposal! 🌿");
 
-  // Daily challenge bonus
   if (state.todayCount === 5) addXP(50, "Daily challenge complete! 🏆");
 
   updateChallenge();
@@ -240,11 +235,11 @@ function logDisposal(bin, co2, isAI = false) {
 }
 
 // ─────────────────────────────────────────────────────────────
-// SECTION 6: TEXT CLASSIFIER
+// SECTION 6: CLASSIFIER (shared by text section + photo section)
 // ─────────────────────────────────────────────────────────────
-function classify(inputRaw) {
+function classifyItem(inputRaw) {
   const input = inputRaw.trim().toLowerCase();
-  if (!input) { showToast("⚠️ Please enter a waste item!"); return; }
+  if (!input) return null;
 
   // 1. Exact match
   let result = WASTE_DB[input] || null;
@@ -263,6 +258,14 @@ function classify(inputRaw) {
     }
   }
 
+  return result;
+}
+
+// ── Text section classify ──
+function classify(inputRaw) {
+  if (!inputRaw.trim()) { showToast("⚠️ Please enter a waste item!"); return; }
+
+  const result      = classifyItem(inputRaw);
   const resultCard  = document.getElementById("resultCard");
   const unknownCard = document.getElementById("unknownCard");
 
@@ -271,7 +274,7 @@ function classify(inputRaw) {
     resultCard.classList.remove("hidden");
     const meta = BIN_META[result.bin];
     document.getElementById("resultIcon").textContent     = result.icon;
-    document.getElementById("resultItemName").textContent = capitalize(input);
+    document.getElementById("resultItemName").textContent = capitalize(inputRaw.trim());
     document.getElementById("resultBinLabel").textContent = "Goes in: " + meta.label;
     document.getElementById("resultWhy").textContent      = result.why;
     document.getElementById("resultTip").textContent      = "💡 Tip: " + result.tip;
@@ -288,7 +291,6 @@ function classify(inputRaw) {
   }
 }
 
-// Text classifier event listeners
 document.getElementById("classifyBtn").addEventListener("click", () => {
   classify(document.getElementById("wasteInput").value);
 });
@@ -317,40 +319,15 @@ document.querySelectorAll(".bin-vote").forEach(btn => {
 });
 
 // ═══════════════════════════════════════════════════════════════
-//   FEATURE 1: AI PHOTO CLASSIFICATION
-//   Flow: choose source → live camera / upload → preview → API → result
-//   API: Claude claude-sonnet-4-20250514 Vision via Anthropic Messages API
+//   FEATURE 1: PHOTO SCANNER
+//   Flow: choose source → camera/upload → preview → type item
+//         name → classify from WASTE_DB → result card
+//   No external API required.
 // ═══════════════════════════════════════════════════════════════
 
-// ── API key management ──
-let ANTHROPIC_API_KEY = localStorage.getItem("ww_api_key") || "";
+let videoStream    = null;
+let capturedBase64 = "";
 
-document.getElementById("saveApiKeyBtn").addEventListener("click", () => {
-  const key = document.getElementById("apiKeyInput").value.trim();
-  if (!key.startsWith("sk-ant")) {
-    showToast("⚠️ Invalid key. Must start with sk-ant"); return;
-  }
-  ANTHROPIC_API_KEY = key;
-  localStorage.setItem("ww_api_key", key);
-  document.getElementById("apiKeyModal").classList.add("hidden");
-  document.getElementById("apiNotice").classList.add("hidden");
-  showToast("🔑 API key saved! AI scanning enabled.");
-});
-
-document.getElementById("skipApiKeyBtn").addEventListener("click", () => {
-  document.getElementById("apiKeyModal").classList.add("hidden");
-  document.getElementById("apiNotice").classList.remove("hidden");
-});
-
-document.getElementById("setKeyBtn").addEventListener("click", () => {
-  document.getElementById("apiKeyModal").classList.remove("hidden");
-});
-
-// ── Camera / step state ──
-let videoStream    = null;   // MediaStream from camera
-let capturedBase64 = "";     // base64 data URL of the captured or uploaded image
-
-// Show one step at a time (1..4)
 function showStep(n) {
   for (let i = 1; i <= 4; i++) {
     document.getElementById("camStep" + i).classList.toggle("hidden", i !== n);
@@ -360,7 +337,6 @@ function showStep(n) {
 // STEP 1 → 2: Open live camera
 document.getElementById("openCameraBtn").addEventListener("click", async () => {
   try {
-    // Request rear camera (ideal for phones); fall back to any camera
     videoStream = await navigator.mediaDevices.getUserMedia({
       video: {
         facingMode: { ideal: "environment" },
@@ -389,25 +365,20 @@ function stopCamera() {
   }
 }
 
-// STEP 2 → 3: Snap photo from live stream
+// STEP 2 → 3: Snap photo
 document.getElementById("snapBtn").addEventListener("click", () => {
   const video  = document.getElementById("cameraVideo");
   const canvas = document.getElementById("snapCanvas");
-
-  // Draw current video frame onto canvas
   canvas.width  = video.videoWidth  || 640;
   canvas.height = video.videoHeight || 480;
   canvas.getContext("2d").drawImage(video, 0, 0);
-
-  // Convert to base64 JPEG (0.85 quality = good quality, smaller size)
   capturedBase64 = canvas.toDataURL("image/jpeg", 0.85);
   document.getElementById("previewImg").src = capturedBase64;
-
   stopCamera();
   showStep(3);
 });
 
-// STEP 1 → 3: Upload image from gallery
+// STEP 1 → 3: Upload image
 document.getElementById("fileUploadInput").addEventListener("change", e => {
   const file = e.target.files[0];
   if (!file) return;
@@ -424,286 +395,184 @@ document.getElementById("fileUploadInput").addEventListener("change", e => {
 document.getElementById("retakeBtn").addEventListener("click", () => {
   capturedBase64 = "";
   document.getElementById("fileUploadInput").value = "";
+  const inp = document.getElementById("photoItemInput");
+  if (inp) inp.value = "";
   showStep(1);
 });
 
-// STEP 3 → 4: Analyze with Claude AI
-document.getElementById("analyzeBtn").addEventListener("click", async () => {
-  // Guard: need API key
-  if (!ANTHROPIC_API_KEY) {
-    document.getElementById("apiKeyModal").classList.remove("hidden");
-    return;
-  }
+// STEP 3 → 4: Classify from typed item name
+document.getElementById("analyzeBtn").addEventListener("click", () => {
   if (!capturedBase64) { showToast("⚠️ No image captured!"); return; }
 
-  // Show loading overlay
-  document.getElementById("analyzingOverlay").classList.remove("hidden");
-  const analyzeBtn       = document.getElementById("analyzeBtn");
-  analyzeBtn.disabled    = true;
-  analyzeBtn.textContent = "🤖 Analyzing…";
-
-  try {
-    // Call Claude Vision API
-    const aiResult = await classifyImageWithClaude(capturedBase64);
-
-    // Show the result card
-    displayAIResult(aiResult);
-    showStep(4);
-
-    // Auto-trigger GPS detection after result is shown
-    detectGPS();
-
-  } catch (err) {
-    console.error("AI classification error:", err);
-    showToast("❌ AI Error: " + (err.message || "Check your API key and try again."));
-  } finally {
-    document.getElementById("analyzingOverlay").classList.add("hidden");
-    analyzeBtn.disabled    = false;
-    analyzeBtn.textContent = "🤖 Classify with AI";
+  const input = (document.getElementById("photoItemInput").value || "").trim();
+  if (!input) {
+    showToast("⚠️ Please type the item name to classify.");
+    document.getElementById("photoItemInput").focus();
+    return;
   }
+
+  const result = classifyItem(input);
+
+  if (result) {
+    displayPhotoResult(input, result);
+  } else {
+    displayPhotoUnknown(input);
+  }
+
+  showStep(4);
+  detectGPS();
 });
 
-// ── Claude Vision API call ──
-async function classifyImageWithClaude(base64DataURL) {
-  // Strip "data:image/jpeg;base64," prefix — API needs raw base64
-  const [header, base64Data] = base64DataURL.split(",");
-  const mediaType = header.split(";")[0].split(":")[1]; // e.g. "image/jpeg"
+// ── Display known result in step 4 ──
+function displayPhotoResult(inputText, result) {
+  const meta = BIN_META[result.bin] || BIN_META.dry;
 
-  // Detailed prompt that forces structured JSON output
-  const prompt = `You are a professional waste management expert and classifier. Analyze the image carefully.
+  document.getElementById("aiThumb").src            = capturedBase64;
+  document.getElementById("aiItemName").textContent  = capitalize(inputText);
+  document.getElementById("aiBinTag").textContent    = result.icon + " " + meta.label;
 
-Identify the waste item shown and classify it.
+  const confPill = document.getElementById("aiConfidencePill");
+  confPill.textContent = "● Database Match";
+  confPill.style.color = "#4caf7d";
 
-Respond ONLY with a valid JSON object — no markdown, no explanation, no code fences. Exactly these fields:
-{
-  "item": "short descriptive name of the waste item (e.g. plastic water bottle, banana peel, old smartphone)",
-  "bin": "exactly one of: wet, dry, haz, ewaste",
-  "confidence": "exactly one of: High, Medium, Low",
-  "icon": "a single relevant emoji",
-  "binLabel": "human-readable label like: Dry / Recyclable Bin or Wet / Organic Bin or Hazardous Bin or E-Waste Bin",
-  "why": "one clear sentence explaining why this item goes in that bin",
-  "tip": "one practical preparation tip before disposing (e.g. rinse it, remove battery, flatten it)",
-  "co2": a number — estimated grams of CO2 saved by correct disposal (use 0 for hazardous/ewaste)
-}
-
-Bin categories:
-- wet   → food scraps, organic matter, garden/kitchen waste, biodegradables
-- dry   → clean recyclables: plastic bottles, cardboard, glass, metals, paper
-- haz   → hazardous: batteries, medicines, paint, chemicals, fluorescent bulbs
-- ewaste → electronics: phones, laptops, chargers, TVs, appliances`;
-
-  const response = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type":                    "application/json",
-      "x-api-key":                       ANTHROPIC_API_KEY,
-      "anthropic-version":               "2023-06-01",
-      "anthropic-dangerous-allow-cors":  "true",
-    },
-    body: JSON.stringify({
-      model:      "claude-sonnet-4-20250514",
-      max_tokens: 500,
-      messages: [{
-        role:    "user",
-        content: [
-          // Send the image first
-          {
-            type: "image",
-            source: {
-              type:       "base64",
-              media_type: mediaType,
-              data:       base64Data,
-            }
-          },
-          // Then the text prompt
-          { type: "text", text: prompt }
-        ]
-      }]
-    })
-  });
-
-  if (!response.ok) {
-    // Parse error message from API response
-    const errBody = await response.json().catch(() => ({}));
-    throw new Error(errBody?.error?.message || "API error " + response.status);
-  }
-
-  const data   = await response.json();
-  const rawText = data.content[0].text.trim();
-
-  // Safely parse — strip any accidental markdown fences
-  const jsonStr = rawText.replace(/```json|```/g, "").trim();
-  return JSON.parse(jsonStr);
-}
-
-// ── Display AI result in Step 4 ──
-function displayAIResult(result) {
-  // Show captured image as thumbnail
-  document.getElementById("aiThumb").src = capturedBase64;
-
-  // Item name and bin label
-  document.getElementById("aiItemName").textContent = capitalize(result.item || "Unknown Item");
-  document.getElementById("aiBinTag").textContent   = (result.icon || "♻️") + " " + (result.binLabel || "Unknown Bin");
-
-  // Confidence pill — colour-coded
-  const confPill   = document.getElementById("aiConfidencePill");
-  const confColors = { High: "#4caf7d", Medium: "#f0c040", Low: "#e05c5c" };
-  confPill.textContent  = "● " + (result.confidence || "Medium") + " Confidence";
-  confPill.style.color  = confColors[result.confidence] || confColors.Medium;
-
-  // Bin badge
-  const badgeEl  = document.getElementById("aiResultBadge");
-  const meta     = BIN_META[result.bin] || BIN_META.dry;
+  const badgeEl = document.getElementById("aiResultBadge");
   badgeEl.textContent = meta.badgeText;
   badgeEl.className   = "result-badge ai-result-badge " + meta.badgeClass;
 
-  // Text content
-  document.getElementById("aiDescription").textContent = result.why  || "Analysis complete.";
-  document.getElementById("aiTipBox").textContent      = "💡 Tip: " + (result.tip || "Dispose responsibly.");
+  document.getElementById("aiDescription").textContent = result.why;
+  document.getElementById("aiTipBox").textContent      = "💡 Tip: " + result.tip;
 
-  // Store bin/co2 on confirm button for logDisposal()
   const confirmBtn       = document.getElementById("aiConfirmBtn");
-  confirmBtn.dataset.bin = result.bin  || "dry";
-  confirmBtn.dataset.co2 = result.co2  || 0;
+  confirmBtn.dataset.bin = result.bin;
+  confirmBtn.dataset.co2 = result.co2;
+  confirmBtn.classList.remove("hidden");
+
+  const unknownBlock = document.getElementById("photoUnknownBlock");
+  if (unknownBlock) unknownBlock.classList.add("hidden");
 }
 
-// ── AI Confirm disposal ──
+// ── Display unknown item in step 4 ──
+function displayPhotoUnknown(inputText) {
+  document.getElementById("aiThumb").src            = capturedBase64;
+  document.getElementById("aiItemName").textContent  = capitalize(inputText) + " (unknown)";
+  document.getElementById("aiBinTag").textContent    = "❓ Not in database";
+  document.getElementById("aiDescription").textContent =
+    "We don't recognise this item yet. Help us by voting for the correct bin below!";
+  document.getElementById("aiTipBox").textContent    =
+    "💡 Tip: When in doubt, keep hazardous items separate and ask your local waste authority.";
+
+  const confPill = document.getElementById("aiConfidencePill");
+  confPill.textContent = "● Unknown Item";
+  confPill.style.color = "#f0c040";
+
+  document.getElementById("aiResultBadge").textContent = "?";
+  document.getElementById("aiResultBadge").className   = "result-badge badge-dry ai-result-badge";
+
+  document.getElementById("aiConfirmBtn").classList.add("hidden");
+
+  const unknownBlock = document.getElementById("photoUnknownBlock");
+  if (unknownBlock) {
+    unknownBlock.classList.remove("hidden");
+    document.getElementById("photoVoteThanks").classList.add("hidden");
+    document.querySelectorAll(".photo-bin-vote").forEach(b => b.disabled = false);
+  }
+}
+
+// Photo unknown voting
+document.querySelectorAll(".photo-bin-vote").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.getElementById("photoVoteThanks").classList.remove("hidden");
+    addXP(5, "Thanks for contributing to the database!");
+    document.querySelectorAll(".photo-bin-vote").forEach(b => b.disabled = true);
+  });
+});
+
+// Photo confirm disposal
 document.getElementById("aiConfirmBtn").addEventListener("click", () => {
   const btn = document.getElementById("aiConfirmBtn");
   const bin = btn.dataset.bin || "dry";
   const co2 = parseInt(btn.dataset.co2 || 0);
-
-  // If GPS was captured, count as geo report
   if (gpsState.lat) state.geoReports++;
-
-  logDisposal(bin, co2, true);  // isAI = true → 15 XP
+  logDisposal(bin, co2, true);  // isPhoto = true → 15 XP
 });
 
 document.getElementById("aiReportBtn").addEventListener("click", () => {
   addXP(2, "Thanks for reporting! 🚩");
 });
 
-// ── Scan another item (reset back to step 1) ──
+// Scan another item — reset to step 1
 document.getElementById("aiScanAgainBtn").addEventListener("click", () => {
   capturedBase64 = "";
   document.getElementById("fileUploadInput").value = "";
+  const inp = document.getElementById("photoItemInput");
+  if (inp) inp.value = "";
   gpsState = { lat: null, lon: null, address: "" };
 
-  // Reset GPS panel states
   document.getElementById("gpsDetecting").classList.add("hidden");
   document.getElementById("gpsResult").classList.add("hidden");
   document.getElementById("gpsDenied").classList.add("hidden");
+  document.getElementById("aiConfirmBtn").classList.remove("hidden");
 
   showStep(1);
 });
 
 // ═══════════════════════════════════════════════════════════════
 //   FEATURE 2: GPS AUTO-TAG & REVERSE GEOCODING
-//   Uses: navigator.geolocation (built into every browser)
-//   Reverse geocode: OpenStreetMap Nominatim (free, no API key)
-//   Result: readable address → shown in GPS panel + pickup form
 // ═══════════════════════════════════════════════════════════════
 
-// Shared GPS state — lat/lon/address used by both AI panel + pickup form
 let gpsState = { lat: null, lon: null, address: "" };
 
-/*
-  detectGPS(target)
-  ─────────────────
-  target = "ai"     → updates the GPS panel inside the AI result card
-  target = "pickup" → updates the pickup request form location display
-
-  Steps:
-  1. Show spinner ("Acquiring GPS signal…")
-  2. Call navigator.geolocation.getCurrentPosition()
-  3. On success → call OpenStreetMap Nominatim reverse geocoding API
-  4. Parse the returned address → show in UI
-  5. On failure → show "denied" state with retry button
-*/
 async function detectGPS(target = "ai") {
-  // Select the right DOM elements based on context
-  const elDetecting = target === "ai"
-    ? document.getElementById("gpsDetecting")
-    : null;
-  const elResult = target === "ai"
-    ? document.getElementById("gpsResult")
-    : null;
-  const elDenied = target === "ai"
-    ? document.getElementById("gpsDenied")
-    : null;
+  const elDetecting = target === "ai" ? document.getElementById("gpsDetecting") : null;
+  const elResult    = target === "ai" ? document.getElementById("gpsResult")    : null;
+  const elDenied    = target === "ai" ? document.getElementById("gpsDenied")    : null;
 
-  // Check browser support
   if (!navigator.geolocation) {
     if (elDenied) elDenied.classList.remove("hidden");
     showToast("⚠️ Your browser doesn't support GPS.");
     return;
   }
 
-  // Show spinner, hide other states
-  if (elDetecting) { elDetecting.classList.remove("hidden"); }
-  if (elResult)    { elResult.classList.add("hidden"); }
-  if (elDenied)    { elDenied.classList.add("hidden"); }
+  if (elDetecting) elDetecting.classList.remove("hidden");
+  if (elResult)    elResult.classList.add("hidden");
+  if (elDenied)    elDenied.classList.add("hidden");
 
   navigator.geolocation.getCurrentPosition(
-    // ── SUCCESS ──
     async (position) => {
       const lat = position.coords.latitude;
       const lon = position.coords.longitude;
-      const acc = Math.round(position.coords.accuracy); // metres
+      const acc = Math.round(position.coords.accuracy);
 
-      // Store globally
       gpsState.lat = lat;
       gpsState.lon = lon;
 
       if (elDetecting) elDetecting.classList.add("hidden");
 
       try {
-        /*
-          OpenStreetMap Nominatim reverse geocoding
-          Free, no API key required.
-          Returns a JSON object with display_name and structured address parts.
-        */
-        const nominatimURL =
-          `https://nominatim.openstreetmap.org/reverse` +
-          `?format=jsonv2&lat=${lat}&lon=${lon}&addressdetails=1`;
-
-        const res = await fetch(nominatimURL, {
-          headers: {
-            "Accept-Language": "en",
-            "User-Agent":      "WasteWise-HackathonApp/1.0"
-          }
-        });
-
-        const geo = await res.json();
-
-        // Build a short, readable address from address parts
-        const shortAddr = buildReadableAddress(geo.address || {});
-        const fullAddr  = geo.display_name || `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&addressdetails=1`,
+          { headers: { "Accept-Language":"en", "User-Agent":"WasteWise-HackathonApp/1.0" } }
+        );
+        const geo        = await res.json();
+        const shortAddr  = buildReadableAddress(geo.address || {});
+        const fullAddr   = geo.display_name || `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
         gpsState.address = shortAddr || fullAddr;
 
         if (target === "ai") {
-          // Update AI result GPS panel
           document.getElementById("gpsAddress").textContent = shortAddr || fullAddr;
           document.getElementById("gpsCoords").textContent  =
             `${lat.toFixed(5)}, ${lon.toFixed(5)}  ±${acc}m`;
-
-          // Set "Open in Maps" link to OpenStreetMap
-          const mapLink = `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}&zoom=17`;
-          document.getElementById("gpsMapBtn").href = mapLink;
-
+          document.getElementById("gpsMapBtn").href =
+            `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}&zoom=17`;
           if (elResult) elResult.classList.remove("hidden");
-
         } else {
-          // Update pickup form
           updatePickupLocation(shortAddr || `${lat.toFixed(4)}, ${lon.toFixed(4)}`);
         }
-
         showToast("📍 Location detected successfully!");
 
       } catch (geoErr) {
-        // Nominatim failed → fall back to raw coordinates
         console.warn("Reverse geocoding failed:", geoErr);
-        const coords = `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+        const coords     = `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
         gpsState.address = coords;
 
         if (target === "ai") {
@@ -718,49 +587,34 @@ async function detectGPS(target = "ai") {
         showToast("📍 Location detected (coordinates only)");
       }
     },
-
-    // ── ERROR / DENIED ──
     (err) => {
       console.warn("GPS error:", err.message);
       if (elDetecting) elDetecting.classList.add("hidden");
       if (elDenied)    elDenied.classList.remove("hidden");
       showToast("⚠️ GPS denied. Please enable Location in browser settings.");
     },
-
-    // ── OPTIONS ──
-    {
-      enableHighAccuracy: true,   // Use GPS chip (not just Wi-Fi triangulation)
-      timeout:            12000,  // 12 seconds max
-      maximumAge:         60000,  // Accept cached position up to 1 min old
-    }
+    { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 }
   );
 }
 
-// Build a short, human-readable address from Nominatim address parts
 function buildReadableAddress(addr) {
-  const parts = [];
-  // Priority: building/house number + road, then suburb/area, then city, then state
-  const road     = addr.road || addr.pedestrian || addr.footway || "";
-  const number   = addr.house_number || "";
-  if (road)                                            parts.push(number ? number + " " + road : road);
-  if (addr.suburb || addr.neighbourhood)               parts.push(addr.suburb || addr.neighbourhood);
-  if (addr.city || addr.town || addr.village)          parts.push(addr.city || addr.town || addr.village);
-  if (addr.state)                                      parts.push(addr.state);
+  const parts  = [];
+  const road   = addr.road || addr.pedestrian || addr.footway || "";
+  const number = addr.house_number || "";
+  if (road)                                           parts.push(number ? number + " " + road : road);
+  if (addr.suburb || addr.neighbourhood)              parts.push(addr.suburb || addr.neighbourhood);
+  if (addr.city || addr.town || addr.village)         parts.push(addr.city || addr.town || addr.village);
+  if (addr.state)                                     parts.push(addr.state);
   return parts.slice(0, 3).join(", ");
 }
 
-// Update the pickup form location display
 function updatePickupLocation(addressText) {
-  const detected = document.getElementById("pickupLocDetected");
-  const detectBtn = document.getElementById("detectPickupLocBtn");
   document.getElementById("pickupLocText").textContent = addressText;
-  detected.classList.remove("hidden");
-  detectBtn.classList.add("hidden");
+  document.getElementById("pickupLocDetected").classList.remove("hidden");
+  document.getElementById("detectPickupLocBtn").classList.add("hidden");
 }
 
-// ── GPS Panel event listeners (AI section) ──
 document.getElementById("gpsRefreshBtn").addEventListener("click", () => {
-  // Clear previous state and re-detect
   gpsState = { lat: null, lon: null, address: "" };
   document.getElementById("gpsResult").classList.add("hidden");
   document.getElementById("gpsDenied").classList.add("hidden");
@@ -771,12 +625,10 @@ document.getElementById("gpsEnableBtn").addEventListener("click", () => {
   detectGPS("ai");
 });
 
-// ── GPS for pickup form ──
 document.getElementById("detectPickupLocBtn").addEventListener("click", () => {
   const btn = document.getElementById("detectPickupLocBtn");
   btn.textContent = "📡 Detecting…";
   btn.disabled    = true;
-
   detectGPS("pickup").finally(() => {
     btn.textContent = "📍 Auto-Detect My Location";
     btn.disabled    = false;
@@ -784,34 +636,25 @@ document.getElementById("detectPickupLocBtn").addEventListener("click", () => {
 });
 
 document.getElementById("redetectPickupBtn").addEventListener("click", () => {
-  // Reset and re-detect location
   document.getElementById("pickupLocDetected").classList.add("hidden");
   document.getElementById("detectPickupLocBtn").classList.remove("hidden");
   gpsState = { lat: null, lon: null, address: "" };
   detectGPS("pickup");
 });
 
-// ── Pickup submit ──
 document.getElementById("pickupSubmitBtn").addEventListener("click", () => {
   const type = document.getElementById("pickupType").value;
-  if (!type) {
-    showToast("⚠️ Please select a waste type first!");
-    return;
-  }
+  if (!type) { showToast("⚠️ Please select a waste type first!"); return; }
   const hasLocation = !document.getElementById("pickupLocDetected").classList.contains("hidden");
-  if (!hasLocation) {
-    showToast("⚠️ Please detect your location before submitting!");
-    return;
-  }
+  if (!hasLocation) { showToast("⚠️ Please detect your location before submitting!"); return; }
   document.getElementById("pickupSuccess").classList.remove("hidden");
   addXP(5, "Pickup request submitted! 🚛");
-  // Reset form
   document.getElementById("pickupType").value  = "";
   document.getElementById("pickupNotes").value = "";
 });
 
 // ─────────────────────────────────────────────────────────────
-// SECTION 7: LEADERBOARD (dummy data)
+// SECTION 7: LEADERBOARD
 // ─────────────────────────────────────────────────────────────
 const DUMMY_INDIVIDUAL = [
   { name:"Priya Sharma", avatar:"👩", xp:820, badge:"🏆", you:false },
@@ -832,18 +675,12 @@ const DUMMY_COMMUNITY = [
 ];
 
 function renderLeaderboard(tab = "individual") {
-  const data = (tab === "individual" ? DUMMY_INDIVIDUAL : DUMMY_COMMUNITY)
-    .map(r => ({ ...r })); // clone to avoid mutating originals
-
-  // Inject real user XP into "you" row
+  const data = (tab === "individual" ? DUMMY_INDIVIDUAL : DUMMY_COMMUNITY).map(r => ({ ...r }));
   data.forEach(r => { if (r.you) r.xp = state.xp; });
-
-  // Sort by XP descending
   data.sort((a, b) => b.xp - a.xp);
 
   const container = document.getElementById("lbTable");
   container.innerHTML = "";
-
   data.forEach((row, i) => {
     const rank  = i + 1;
     const medal = rank === 1 ? "🥇" : rank === 2 ? "🥈" : rank === 3 ? "🥉" : rank;
@@ -875,13 +712,13 @@ const DAYS_OF_WEEK = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday
 const TODAY_NAME   = DAYS_OF_WEEK[new Date().getDay()];
 
 const SCHEDULE = [
-  { day:"Monday",    type:"🟢", label:"Wet / Organic",   time:"7:00 – 8:00 AM" },
-  { day:"Tuesday",   type:"🔵", label:"Dry Recyclables", time:"8:00 – 9:00 AM" },
-  { day:"Wednesday", type:"🟢", label:"Wet / Organic",   time:"7:00 – 8:00 AM" },
-  { day:"Thursday",  type:"🔵", label:"Dry Recyclables", time:"8:00 – 9:00 AM" },
-  { day:"Friday",    type:"🟢", label:"Wet / Organic",   time:"7:00 – 8:00 AM" },
+  { day:"Monday",    type:"🟢", label:"Wet / Organic",   time:"7:00 – 8:00 AM"     },
+  { day:"Tuesday",   type:"🔵", label:"Dry Recyclables", time:"8:00 – 9:00 AM"     },
+  { day:"Wednesday", type:"🟢", label:"Wet / Organic",   time:"7:00 – 8:00 AM"     },
+  { day:"Thursday",  type:"🔵", label:"Dry Recyclables", time:"8:00 – 9:00 AM"     },
+  { day:"Friday",    type:"🟢", label:"Wet / Organic",   time:"7:00 – 8:00 AM"     },
   { day:"Saturday",  type:"🟡", label:"E-Waste Drive",   time:"10:00 AM – 1:00 PM" },
-  { day:"Sunday",    type:"🔴", label:"Hazardous Waste", time:"9:00 – 11:00 AM" },
+  { day:"Sunday",    type:"🔴", label:"Hazardous Waste", time:"9:00 – 11:00 AM"    },
 ];
 
 function renderSchedule() {
@@ -945,31 +782,18 @@ function capitalize(str) {
 }
 
 // ─────────────────────────────────────────────────────────────
-// INIT — runs when DOM is fully loaded
+// INIT
 // ─────────────────────────────────────────────────────────────
 function init() {
-  // Show API key modal if no key saved yet
-  if (!ANTHROPIC_API_KEY) {
-    setTimeout(() => {
-      document.getElementById("apiKeyModal").classList.remove("hidden");
-    }, 900);
-  } else {
-    document.getElementById("apiNotice").classList.add("hidden");
-  }
-
-  // Hero stat animations
   animateCount(document.getElementById("stat1"), 1248);
   animateCount(document.getElementById("stat2"), 342);
   animateCount(document.getElementById("stat3"), 94, "%");
 
-  // Render everything
   updateDashboard();
   updateChallenge();
   renderBadges();
   renderLeaderboard("individual");
   renderSchedule();
-
-  // Start AI scanner on step 1
   showStep(1);
 }
 
