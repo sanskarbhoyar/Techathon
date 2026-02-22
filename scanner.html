@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Live Waste Scanner – WasteWise</title>
+    <meta name="description"
+        content="Point your camera at any waste item and get instant AI-powered bin classification — Dry, Wet, E-Waste, or Hazardous." />
+    <link rel="stylesheet" href="scanner.css" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap"
+        rel="stylesheet" />
+</head>
+
+<body>
+
+    <!-- ═══════════ HEADER ═══════════ -->
+    <header class="header">
+        <a href="index.html" class="logo">♻️ WasteWise</a>
+        <nav class="nav">
+            <a href="index.html#ai-scan" class="nav-link">📸 AI Scan</a>
+            <a href="index.html#scanner" class="nav-link">🔍 Classify</a>
+            <a href="scanner.html" class="nav-link active">📹 Live Scanner</a>
+            <a href="index.html#dashboard" class="nav-link">📊 Dashboard</a>
+            <a href="index.html#leaderboard" class="nav-link">🏆 Leaderboard</a>
+        </nav>
+        <div class="header-right">
+            <span class="xp-badge">⚡ Live Scanner</span>
+            <div class="avatar">🧑</div>
+        </div>
+    </header>
+
+    <!-- ═══════════ PAGE ═══════════ -->
+    <main class="scanner-page">
+
+        <!-- Page heading -->
+        <div class="page-header">
+            <div class="page-tag">📹 Real-Time AI · Camera Classification</div>
+            <h1 class="page-title">Live <span class="accent">Waste Scanner</span></h1>
+            <p class="page-sub">Point your rear camera at any waste item — capture, classify, and dispose right.</p>
+        </div>
+
+        <!-- ─────────────────────────────────────────
+       STATE 1: PERMISSION PROMPT
+  ───────────────────────────────────────── -->
+        <div class="scanner-state permission-card" id="statePermission">
+            <div class="perm-icon">📸</div>
+            <h2 class="perm-title">Ready to Scan?</h2>
+            <p class="perm-desc">
+                Allow camera access to use the live viewfinder. Your rear (environment-facing) camera will be used — no
+                photos are stored or shared.
+            </p>
+
+            <div class="perm-actions">
+                <button class="btn btn-primary" id="startCameraBtn">📷 Start Camera</button>
+
+                <label class="upload-label" id="uploadMainLabel" for="uploadFallbackInput">
+                    🖼️ Upload a Photo Instead
+                </label>
+                <input type="file" id="uploadFallbackInput" accept="image/*" />
+            </div>
+
+            <p class="perm-privacy">🔒 Camera feed stays on your device — never uploaded.</p>
+            <!-- Model loading status -->
+            <div id="modelStatus"
+                style="margin-top:1rem;font-size:.8rem;color:var(--muted);font-family:'Syne',sans-serif;font-weight:600;letter-spacing:.04em;">
+                🧠 Loading AI model…
+            </div>
+        </div>
+
+        <!-- ─────────────────────────────────────────
+       STATE 2: CAMERA PERMISSION DENIED
+  ───────────────────────────────────────── -->
+        <div class="scanner-state denied-card hidden" id="stateDenied">
+            <div class="denied-icon">🚫</div>
+            <h2 class="denied-title">Camera Access Denied</h2>
+            <p class="denied-desc">
+                WasteWise needs your camera to scan waste items. Please enable camera access and try again, or upload a
+                photo from your gallery.
+            </p>
+            <div class="denied-actions">
+                <button class="btn btn-primary" id="retryPermBtn">🔄 Try Again</button>
+                <label class="upload-label" for="uploadDeniedInput">🖼️ Upload Photo</label>
+                <input type="file" id="uploadDeniedInput" accept="image/*" />
+            </div>
+            <div class="denied-steps">
+                <p>How to enable camera:</p>
+                <ol>
+                    <li>Click the 🔒 lock icon in your browser's address bar</li>
+                    <li>Set <strong>Camera</strong> to <strong>Allow</strong></li>
+                    <li>Reload this page and tap "Try Again"</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- ─────────────────────────────────────────
+       STATE 3: LIVE VIEWFINDER
+  ───────────────────────────────────────── -->
+        <div class="scanner-state hidden" id="stateViewfinder">
+            <div class="viewfinder-wrap">
+                <video id="liveVideo" autoplay playsinline muted></video>
+
+                <!-- Scan frame overlay -->
+                <div class="scan-frame">
+                    <div class="sf-corner tl"></div>
+                    <div class="sf-corner tr"></div>
+                    <div class="sf-corner bl"></div>
+                    <div class="sf-corner br"></div>
+                    <div class="sf-laser"></div>
+                </div>
+
+                <p class="vf-hint">📦 Centre the waste item inside the frame</p>
+            </div>
+
+            <!-- Hidden canvas for frame capture -->
+            <canvas id="snapCanvas" style="display:none"></canvas>
+
+            <!-- Controls -->
+            <div class="cam-controls">
+                <button class="btn btn-ghost" id="cancelCamBtn">✕ Cancel</button>
+
+                <button class="shutter-btn" id="shutterBtn" title="Capture photo" aria-label="Take photo">
+                    <div class="capture-ring"></div>
+                    <div class="capture-dot"></div>
+                </button>
+
+                <!-- Spacer to balance the layout -->
+                <div style="width:80px"></div>
+            </div>
+        </div>
+
+        <!-- ─────────────────────────────────────────
+       STATE 4: ANALYZING / SCANNING ANIMATION
+  ───────────────────────────────────────── -->
+        <div class="scanner-state analyzing-card hidden" id="stateAnalyzing">
+            <div class="preview-thumb">
+                <img id="analyzeThumb" src="" alt="Captured waste item" />
+                <div class="analyzing-layer">
+                    <div class="ai-pulse-ring">🤖</div>
+                    <div class="scan-label">Analysing Waste</div>
+                    <div class="scan-dots">
+                        <span>●</span><span>●</span><span>●</span>
+                    </div>
+                </div>
+            </div>
+            <p style="color:var(--muted);font-size:.88rem;text-align:center;">Sending to AI classifier — hang tight…</p>
+        </div>
+
+        <!-- ─────────────────────────────────────────
+       STATE 5: RESULT CARD
+  ───────────────────────────────────────── -->
+        <div class="scanner-state result-card hidden" id="stateResult">
+
+            <!-- Colour-coded banner -->
+            <div class="result-banner">
+                <span id="resultBannerText">🔵 Dry / Recyclable Bin</span>
+                <span class="bin-badge" id="resultBinBadge">DRY</span>
+            </div>
+
+            <div class="result-body">
+
+                <!-- Offline notice (hidden by default) -->
+                <div class="offline-notice hidden" id="offlineNotice">
+                    ⚠️ Backend offline — showing local database result (demo mode).
+                </div>
+
+                <!-- Thumb + info -->
+                <div class="result-main">
+                    <div class="result-img-wrap">
+                        <img id="resultThumb" src="" alt="Classified item" />
+                    </div>
+                    <div class="result-info">
+                        <div class="result-item" id="resultItemName">Item Name</div>
+                        <div class="result-bin-label" id="resultBinLabel">Goes in: 🔵 Dry / Recyclable Bin</div>
+
+                        <!-- Confidence meter -->
+                        <div class="confidence-wrap">
+                            <div class="confidence-label">
+                                <span>AI Confidence</span>
+                                <span id="confPct">--</span>
+                            </div>
+                            <div class="confidence-track">
+                                <div class="confidence-fill" id="confFill" style="width:0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Why + Tip -->
+                <div class="result-why" id="resultWhy"></div>
+                <div class="result-tip" id="resultTip"></div>
+
+                <!-- Actions -->
+                <div class="result-actions">
+                    <button class="btn-confirm-scan" id="confirmDisposalBtn">✅ I Disposed Correctly! (+15 XP)</button>
+                    <button class="btn btn-ghost" id="scanAgainBtn">📹 Scan Another</button>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ═══════════ FOOTER ═══════════ -->
+    <footer class="footer">
+        <div class="footer-logo">♻️ WasteWise</div>
+        <p>Built for Techathon 2026 · Made with 💚 by First-Year Engineers</p>
+        <p class="footer-stack">HTML · CSS · Vanilla JS · getUserMedia API · /predict Endpoint</p>
+    </footer>
+
+    <!-- Toast -->
+    <div class="toast hidden" id="toast"></div>
+
+    <!-- TensorFlow.js + MobileNet (loads model in browser — no backend needed) -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.1/dist/mobilenet.min.js"></script>
+    <script src="scanner.js"></script>
+</body>
+
+</html>

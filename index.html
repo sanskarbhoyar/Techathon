@@ -1,411 +1,438 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>WasteWise – AI Waste Scanner</title>
-  <link rel="stylesheet" href="style.css"/>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap"
+    rel="stylesheet" />
 </head>
+
 <body>
 
-<!-- ═══════════ HEADER ═══════════ -->
-<header class="header">
-  <div class="logo">♻️ WasteWise</div>
-  <nav class="nav">
-    <a href="#ai-scan"     class="nav-link">📸 AI Scan</a>
-    <a href="#scanner"     class="nav-link">🔍 Classify</a>
-    <a href="#dashboard"   class="nav-link">📊 Dashboard</a>
-    <a href="#leaderboard" class="nav-link">🏆 Leaderboard</a>
-    <a href="#schedule"    class="nav-link">🚛 Schedule</a>
-  </nav>
-  <div class="header-right">
-    <span class="xp-badge" id="headerXP">⚡ 0 XP</span>
-    <div class="avatar">🧑</div>
-  </div>
-</header>
+  <!-- ═══════════ HEADER ═══════════ -->
+  <header class="header">
+    <div class="logo">♻️ WasteWise</div>
+    <nav class="nav">
+      <a href="#ai-scan" class="nav-link">📸 AI Scan</a>
+      <a href="#scanner" class="nav-link">🔍 Classify</a>
+      <a href="scanner.html" class="nav-link">📹 Live Scanner</a>
+      <a href="#dashboard" class="nav-link">📊 Dashboard</a>
+      <a href="#leaderboard" class="nav-link">🏆 Leaderboard</a>
+      <a href="#schedule" class="nav-link">🚛 Schedule</a>
+    </nav>
+    <div class="header-right">
+      <span class="xp-badge" id="headerXP">⚡ 0 XP</span>
+      <div class="avatar">🧑</div>
+    </div>
+  </header>
 
-<!-- ═══════════ HERO ═══════════ -->
-<section class="hero">
-  <div class="hero-text">
-    <div class="hero-tag">🌍 Techathon 2026 · Smart Cities · Waste Management</div>
-    <h1 class="hero-title">Snap. <span class="accent">AI Classifies.</span><br/>Dispose <span class="accent">Right.</span></h1>
-    <p class="hero-sub">Point your camera at any waste item — AI identifies it in seconds, auto-tags your GPS location, and tells you exactly which bin it belongs in.</p>
-    <div class="hero-actions">
-      <a href="#ai-scan" class="btn btn-primary">📸 Try AI Scanner →</a>
-      <a href="#scanner" class="btn btn-ghost">🔍 Type Instead</a>
+  <!-- ═══════════ HERO ═══════════ -->
+  <section class="hero">
+    <div class="hero-text">
+      <div class="hero-tag">🌍 Techathon 2026 · Smart Cities · Waste Management</div>
+      <h1 class="hero-title">Snap. <span class="accent">AI Classifies.</span><br />Dispose <span
+          class="accent">Right.</span></h1>
+      <p class="hero-sub">Point your camera at any waste item — AI identifies it in seconds, auto-tags your GPS
+        location, and tells you exactly which bin it belongs in.</p>
+      <div class="hero-actions">
+        <a href="#ai-scan" class="btn btn-primary">📸 Try AI Scanner →</a>
+        <a href="#scanner" class="btn btn-ghost">🔍 Type Instead</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><span class="stat-num" id="stat1">1,248</span><span class="stat-label">Items Classified</span>
+        </div>
+        <div class="stat"><span class="stat-num" id="stat2">342</span><span class="stat-label">Active Users</span></div>
+        <div class="stat"><span class="stat-num" id="stat3">94</span><span class="stat-label">% AI Accuracy</span></div>
+      </div>
     </div>
-    <div class="hero-stats">
-      <div class="stat"><span class="stat-num" id="stat1">1,248</span><span class="stat-label">Items Classified</span></div>
-      <div class="stat"><span class="stat-num" id="stat2">342</span><span class="stat-label">Active Users</span></div>
-      <div class="stat"><span class="stat-num" id="stat3">94</span><span class="stat-label">% AI Accuracy</span></div>
+    <div class="hero-visual">
+      <div class="bin-group">
+        <div class="bin bin-wet" data-tooltip="Wet / Organic">🟢<span>Wet</span></div>
+        <div class="bin bin-dry" data-tooltip="Dry / Recyclable">🔵<span>Dry</span></div>
+        <div class="bin bin-haz" data-tooltip="Hazardous">🔴<span>Hazardous</span></div>
+        <div class="bin bin-ewaste" data-tooltip="E-Waste">🟡<span>E-Waste</span></div>
+      </div>
     </div>
-  </div>
-  <div class="hero-visual">
-    <div class="bin-group">
-      <div class="bin bin-wet"    data-tooltip="Wet / Organic">🟢<span>Wet</span></div>
-      <div class="bin bin-dry"    data-tooltip="Dry / Recyclable">🔵<span>Dry</span></div>
-      <div class="bin bin-haz"    data-tooltip="Hazardous">🔴<span>Hazardous</span></div>
-      <div class="bin bin-ewaste" data-tooltip="E-Waste">🟡<span>E-Waste</span></div>
-    </div>
-  </div>
-</section>
+  </section>
 
-<!-- ═══════════ HOW IT WORKS ═══════════ -->
-<section class="how-section" id="how">
-  <h2 class="section-title">How <span class="accent">WasteWise</span> Works</h2>
-  <div class="steps">
-    <div class="step-card">
-      <div class="step-num">01</div>
-      <h3>📸 Snap a Photo</h3>
-      <p>Use your phone camera or upload from gallery. Live viewfinder with scan-frame shows exactly where to aim.</p>
+  <!-- ═══════════ HOW IT WORKS ═══════════ -->
+  <section class="how-section" id="how">
+    <h2 class="section-title">How <span class="accent">WasteWise</span> Works</h2>
+    <div class="steps">
+      <div class="step-card">
+        <div class="step-num">01</div>
+        <h3>📸 Snap a Photo</h3>
+        <p>Use your phone camera or upload from gallery. Live viewfinder with scan-frame shows exactly where to aim.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">02</div>
+        <h3>🔍 Type & Classify</h3>
+        <p>Type the item name — the database instantly identifies the correct bin, reason, and disposal tip.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">03</div>
+        <h3>📍 GPS Auto-Tag</h3>
+        <p>Location auto-detected and reverse-geocoded into a readable address via OpenStreetMap. Zero typing.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">04</div>
+        <h3>⚡ Earn &amp; Rise</h3>
+        <p>Confirm disposal, earn 15 XP, maintain streaks, unlock badges, and climb your community leaderboard.</p>
+      </div>
+      <a href="scanner.html" class="step-card"
+        style="text-decoration:none;border-color:rgba(125,255,107,.4);background:rgba(125,255,107,.06)">
+        <div class="step-num" style="opacity:1">📹</div>
+        <h3><span style="color:var(--accent)">NEW</span> Live Scanner</h3>
+        <p>Open your rear camera and instantly classify waste — powered by AI. No typing needed. Try it now →</p>
+      </a>
     </div>
-    <div class="step-card">
-      <div class="step-num">02</div>
-      <h3>🔍 Type & Classify</h3>
-      <p>Type the item name — the database instantly identifies the correct bin, reason, and disposal tip.</p>
-    </div>
-    <div class="step-card">
-      <div class="step-num">03</div>
-      <h3>📍 GPS Auto-Tag</h3>
-      <p>Location auto-detected and reverse-geocoded into a readable address via OpenStreetMap. Zero typing.</p>
-    </div>
-    <div class="step-card">
-      <div class="step-num">04</div>
-      <h3>⚡ Earn &amp; Rise</h3>
-      <p>Confirm disposal, earn 15 XP, maintain streaks, unlock badges, and climb your community leaderboard.</p>
-    </div>
-  </div>
-</section>
+  </section>
 
-<!-- ═══════════════════════════════════════
+  <!-- ═══════════════════════════════════════
      FEATURE 1 — AI PHOTO SCANNER
 ═══════════════════════════════════════ -->
-<section class="ai-scan-section" id="ai-scan">
-  <h2 class="section-title">📸 <span class="accent">Photo Scanner</span></h2>
-  <p class="section-sub">Snap or upload a photo, type the item name, and get instant disposal guidance — no API key needed.</p>
+  <section class="ai-scan-section" id="ai-scan">
+    <h2 class="section-title">📸 <span class="accent">Photo Scanner</span></h2>
+    <p class="section-sub">Snap or upload a photo, type the item name, and get instant disposal guidance — no API key
+      needed.</p>
 
-  <div class="ai-scan-box">
+    <div class="ai-scan-box">
 
-    <!-- STEP 1: Input method -->
-    <div class="cam-step" id="camStep1">
-      <div class="cam-options">
-        <button class="cam-option-btn" id="openCameraBtn">
-          <div class="cam-option-icon">📷</div>
-          <div class="cam-option-label">Open Camera</div>
-          <div class="cam-option-sub">Live viewfinder</div>
-        </button>
-        <label class="cam-option-btn" for="fileUploadInput">
-          <div class="cam-option-icon">🖼️</div>
-          <div class="cam-option-label">Upload Image</div>
-          <div class="cam-option-sub">From gallery / files</div>
-        </label>
-        <input type="file" id="fileUploadInput" accept="image/*" style="display:none"/>
-      </div>
-      <p class="cam-hint">💡 Works best with clear, well-lit photos of a single item</p>
-    </div>
-
-    <!-- STEP 2: Live Camera -->
-    <div class="cam-step hidden" id="camStep2">
-      <div class="camera-viewport">
-        <video id="cameraVideo" autoplay playsinline muted></video>
-        <div class="scan-overlay">
-          <div class="scan-corner tl"></div>
-          <div class="scan-corner tr"></div>
-          <div class="scan-corner bl"></div>
-          <div class="scan-corner br"></div>
-          <div class="scan-laser"></div>
-        </div>
-        <p class="viewport-hint">📦 Centre the waste item inside the frame</p>
-      </div>
-      <canvas id="snapCanvas" style="display:none"></canvas>
-      <div class="cam-bottom-bar">
-        <button class="btn btn-ghost" id="closeCameraBtn">✕ Cancel</button>
-        <button class="snap-btn" id="snapBtn" title="Take Photo">
-          <div class="snap-ring"></div>
-          <div class="snap-dot"></div>
-        </button>
-        <div style="width:80px"></div>
-      </div>
-    </div>
-
-    <!-- STEP 3: Preview + item name input -->
-    <div class="cam-step hidden" id="camStep3">
-      <div class="preview-wrap">
-        <img id="previewImg" src="" alt="Captured waste item"/>
-      </div>
-      <div class="photo-item-entry">
-        <label for="photoItemInput" class="photo-item-label">✏️ What item is this? Type to classify:</label>
-        <div class="photo-item-row">
-          <input type="text" id="photoItemInput" placeholder="e.g. plastic bottle, battery, banana peel…" autocomplete="off"/>
-          <button class="btn btn-primary" id="analyzeBtn">🔍 Classify</button>
-        </div>
-        <p class="cam-hint">💡 Type a keyword — partial names like "bottle", "phone", "battery" also work!</p>
-      </div>
-      <div class="preview-actions">
-        <button class="btn btn-ghost" id="retakeBtn">🔄 Retake Photo</button>
-      </div>
-    </div>
-
-    <!-- STEP 4: Result -->
-    <div class="cam-step hidden" id="camStep4">
-      <div class="ai-result-card">
-
-        <div class="ai-result-top">
-          <span class="ai-badge-pill">📸 Photo · Classified</span>
-          <span class="ai-confidence-pill" id="aiConfidencePill">● Database Match</span>
-        </div>
-
-        <div class="ai-result-main">
-          <img id="aiThumb" src="" alt="Classified item" class="ai-thumb"/>
-          <div class="ai-result-info">
-            <div class="ai-item-name" id="aiItemName">Item Name</div>
-            <div class="ai-bin-tag"   id="aiBinTag">🔵 Dry / Recyclable Bin</div>
-            <span class="result-badge badge-dry ai-result-badge" id="aiResultBadge">DRY</span>
-          </div>
-        </div>
-
-        <div class="ai-description" id="aiDescription"></div>
-        <div class="ai-tip-box"     id="aiTipBox"></div>
-
-        <!-- Unknown item voting (shown only when item not in DB) -->
-        <div class="unknown-card hidden" id="photoUnknownBlock">
-          <p>Help us grow the database — vote for the correct bin:</p>
-          <div class="bin-vote-group">
-            <button class="bin-vote photo-bin-vote" data-bin="wet">🟢 Wet</button>
-            <button class="bin-vote photo-bin-vote" data-bin="dry">🔵 Dry</button>
-            <button class="bin-vote photo-bin-vote" data-bin="hazardous">🔴 Hazardous</button>
-            <button class="bin-vote photo-bin-vote" data-bin="ewaste">🟡 E-Waste</button>
-          </div>
-          <p class="vote-thanks hidden" id="photoVoteThanks">🎉 Thanks! +5 XP for contributing!</p>
-        </div>
-
-        <!-- GPS Auto-Tag panel -->
-        <div class="gps-panel">
-          <div class="gps-panel-header">
-            <span>📍 Disposal Location</span>
-            <button class="gps-refresh-btn" id="gpsRefreshBtn">🔄 Refresh GPS</button>
-          </div>
-          <div class="gps-state gps-detecting hidden" id="gpsDetecting">
-            <div class="gps-spinner"></div>
-            <span>Acquiring GPS signal…</span>
-          </div>
-          <div class="gps-state gps-result hidden" id="gpsResult">
-            <div class="gps-address-row">
-              <span class="gps-pin">📍</span>
-              <div>
-                <div class="gps-address" id="gpsAddress">—</div>
-                <div class="gps-coords"  id="gpsCoords">—</div>
-              </div>
-            </div>
-            <a class="gps-map-btn" id="gpsMapBtn" href="#" target="_blank" rel="noopener">
-              🗺️ Open in Maps
-            </a>
-          </div>
-          <div class="gps-state gps-denied hidden" id="gpsDenied">
-            <span>⚠️ Location access denied.</span>
-            <button class="btn-inline" id="gpsEnableBtn">Try Again</button>
-          </div>
-        </div>
-
-        <div class="ai-actions">
-          <button class="btn btn-confirm" id="aiConfirmBtn" data-bin="dry" data-co2="0">
-            ✅ I Disposed Correctly! (+15 XP)
+      <!-- STEP 1: Input method -->
+      <div class="cam-step" id="camStep1">
+        <div class="cam-options">
+          <button class="cam-option-btn" id="openCameraBtn">
+            <div class="cam-option-icon">📷</div>
+            <div class="cam-option-label">Open Camera</div>
+            <div class="cam-option-sub">Live viewfinder</div>
           </button>
-          <button class="btn btn-ghost" id="aiReportBtn">🚩 Report Issue</button>
-          <button class="btn btn-ghost" id="aiScanAgainBtn">📸 Scan Another Item</button>
+          <label class="cam-option-btn" for="fileUploadInput">
+            <div class="cam-option-icon">🖼️</div>
+            <div class="cam-option-label">Upload Image</div>
+            <div class="cam-option-sub">From gallery / files</div>
+          </label>
+          <input type="file" id="fileUploadInput" accept="image/*" style="display:none" />
         </div>
-
+        <p class="cam-hint">💡 Works best with clear, well-lit photos of a single item</p>
       </div>
-    </div><!-- end camStep4 -->
 
-  </div><!-- end ai-scan-box -->
-</section>
-
-<!-- ═══════════ TEXT CLASSIFIER ═══════════ -->
-<section class="scanner-section" id="scanner">
-  <h2 class="section-title">🔍 Text <span class="accent">Classifier</span></h2>
-  <p class="section-sub">No camera? Type any waste item and get instant guidance.</p>
-
-  <div class="classifier-box">
-    <div class="search-bar">
-      <input type="text" id="wasteInput" placeholder="e.g. banana peel, old phone, paint can…" autocomplete="off"/>
-      <button class="btn btn-primary" id="classifyBtn">Classify</button>
-    </div>
-    <div class="quick-chips">
-      <span class="chip" data-item="banana peel">🍌 Banana Peel</span>
-      <span class="chip" data-item="plastic bottle">🥤 Plastic Bottle</span>
-      <span class="chip" data-item="old phone">📱 Old Phone</span>
-      <span class="chip" data-item="newspaper">📰 Newspaper</span>
-      <span class="chip" data-item="battery">🔋 Battery</span>
-      <span class="chip" data-item="cardboard">📦 Cardboard</span>
-      <span class="chip" data-item="medicine bottle">💊 Medicine</span>
-      <span class="chip" data-item="glass bottle">🍾 Glass Bottle</span>
-    </div>
-    <div class="result-card hidden" id="resultCard">
-      <div class="result-header">
-        <div class="result-icon" id="resultIcon">♻️</div>
-        <div>
-          <div class="result-item-name" id="resultItemName">Item</div>
-          <div class="result-bin-label" id="resultBinLabel">Goes in: Dry Bin</div>
+      <!-- STEP 2: Live Camera -->
+      <div class="cam-step hidden" id="camStep2">
+        <div class="camera-viewport">
+          <video id="cameraVideo" autoplay playsinline muted></video>
+          <div class="scan-overlay">
+            <div class="scan-corner tl"></div>
+            <div class="scan-corner tr"></div>
+            <div class="scan-corner bl"></div>
+            <div class="scan-corner br"></div>
+            <div class="scan-laser"></div>
+          </div>
+          <p class="viewport-hint">📦 Centre the waste item inside the frame</p>
         </div>
-        <span class="result-badge" id="resultBadge">DRY</span>
-      </div>
-      <div class="result-why" id="resultWhy"></div>
-      <div class="result-tip" id="resultTip"></div>
-      <div class="result-actions">
-        <button class="btn btn-confirm" id="confirmBtn">✅ Disposed Correctly! (+10 XP)</button>
-        <button class="btn btn-ghost"   id="reportBtn">🚩 Unsure / Report</button>
-      </div>
-    </div>
-    <div class="unknown-card hidden" id="unknownCard">
-      <div class="unknown-icon">🤔</div>
-      <h3>We don't know this item yet!</h3>
-      <p>Help us grow the database — vote for the correct bin:</p>
-      <div class="bin-vote-group">
-        <button class="bin-vote" data-bin="wet">🟢 Wet</button>
-        <button class="bin-vote" data-bin="dry">🔵 Dry</button>
-        <button class="bin-vote" data-bin="hazardous">🔴 Hazardous</button>
-        <button class="bin-vote" data-bin="ewaste">🟡 E-Waste</button>
-      </div>
-      <p class="vote-thanks hidden" id="voteThanks">🎉 Thanks! +5 XP for contributing!</p>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════════ DAILY CHALLENGE ═══════════ -->
-<section class="challenge-section">
-  <div class="challenge-banner">
-    <div class="challenge-left">
-      <div class="challenge-tag">🔥 Daily Challenge</div>
-      <h3>Classify 5 items today</h3>
-      <div class="progress-bar-wrap">
-        <div class="progress-bar" id="challengeBar" style="width:0%"></div>
-      </div>
-      <p id="challengeProgress">0 / 5 completed</p>
-    </div>
-    <div class="challenge-reward">
-      <div class="reward-circle">🏆</div>
-      <div>+50 XP<br/><small>Bonus Reward</small></div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════════ DASHBOARD ═══════════ -->
-<section class="dashboard-section" id="dashboard">
-  <h2 class="section-title">📊 Your <span class="accent">Dashboard</span></h2>
-  <div class="dash-grid">
-    <div class="dash-card">
-      <div class="dash-card-title">Total XP</div>
-      <div class="dash-big" id="dashXP">0</div>
-      <div class="dash-sub">Level: <span id="dashLevel">Beginner</span></div>
-      <div class="level-bar-wrap"><div class="level-bar" id="levelBar" style="width:0%"></div></div>
-    </div>
-    <div class="dash-card">
-      <div class="dash-card-title">🔥 Streak</div>
-      <div class="dash-big" id="dashStreak">0</div>
-      <div class="dash-sub">days in a row</div>
-    </div>
-    <div class="dash-card">
-      <div class="dash-card-title">Items Logged</div>
-      <div class="dash-big" id="dashItems">0</div>
-      <div class="dash-sub">Total confirmed</div>
-    </div>
-    <div class="dash-card">
-      <div class="dash-card-title">🌱 CO₂ Saved</div>
-      <div class="dash-big" id="dashCO2">0 g</div>
-      <div class="dash-sub">By correct disposal</div>
-    </div>
-    <div class="dash-card">
-      <div class="dash-card-title">Waste Breakdown</div>
-      <div class="bar-chart">
-        <div class="bar-wrap"><div class="bar-col wet-col" id="barWet" style="height:4px"></div><span>Wet</span></div>
-        <div class="bar-wrap"><div class="bar-col dry-col" id="barDry" style="height:4px"></div><span>Dry</span></div>
-        <div class="bar-wrap"><div class="bar-col haz-col" id="barHaz" style="height:4px"></div><span>Haz</span></div>
-        <div class="bar-wrap"><div class="bar-col ew-col"  id="barEW"  style="height:4px"></div><span>E-Waste</span></div>
-      </div>
-    </div>
-    <div class="dash-card">
-      <div class="dash-card-title">🏅 Badges</div>
-      <div class="badge-grid" id="badgeGrid">
-        <div class="badge locked" title="Log 1 item">🌱</div>
-        <div class="badge locked" title="Log 10 items">⚔️</div>
-        <div class="badge locked" title="7-day streak">👑</div>
-        <div class="badge locked" title="5 dry items">♻️</div>
-        <div class="badge locked" title="5 wet items">🌿</div>
-        <div class="badge locked" title="500 XP">🏆</div>
-        <div class="badge locked" title="5 photo scans">📸</div>
-        <div class="badge locked" title="3 GPS reports">📍</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════════ LEADERBOARD ═══════════ -->
-<section class="leaderboard-section" id="leaderboard">
-  <h2 class="section-title">🏆 Community <span class="accent">Leaderboard</span></h2>
-  <p class="section-sub">Compete with your society, hostel block, or school section.</p>
-  <div class="lb-tabs">
-    <button class="lb-tab active" data-tab="individual">Individual</button>
-    <button class="lb-tab"        data-tab="community">Community</button>
-  </div>
-  <div class="lb-table" id="lbTable"></div>
-</section>
-
-<!-- ═══════════ PICKUP SCHEDULE ═══════════ -->
-<section class="schedule-section" id="schedule">
-  <h2 class="section-title">🚛 Pickup <span class="accent">Schedule</span></h2>
-  <p class="section-sub">Know when the truck arrives — GPS auto-fills your pickup address.</p>
-  <div class="schedule-grid" id="scheduleGrid"></div>
-
-  <div class="extra-pickup">
-    <h3>📦 Request Extra Pickup</h3>
-    <p class="pickup-sub">📍 Your location will be auto-detected — no typing needed!</p>
-    <div class="pickup-form">
-      <select id="pickupType">
-        <option value="">Select waste type…</option>
-        <option value="bulk">Bulk / Large Items</option>
-        <option value="hazardous">Hazardous Waste</option>
-        <option value="ewaste">E-Waste Drive</option>
-        <option value="garden">Garden / Green Waste</option>
-      </select>
-      <div class="pickup-gps-row">
-        <button class="btn btn-loc" id="detectPickupLocBtn">📍 Auto-Detect My Location</button>
-        <div class="pickup-loc-detected hidden" id="pickupLocDetected">
-          <span class="loc-tick">✅</span>
-          <span id="pickupLocText">Detecting…</span>
-          <button class="btn-redetect" id="redetectPickupBtn" title="Re-detect">🔄</button>
+        <canvas id="snapCanvas" style="display:none"></canvas>
+        <div class="cam-bottom-bar">
+          <button class="btn btn-ghost" id="closeCameraBtn">✕ Cancel</button>
+          <button class="snap-btn" id="snapBtn" title="Take Photo">
+            <div class="snap-ring"></div>
+            <div class="snap-dot"></div>
+          </button>
+          <div style="width:80px"></div>
         </div>
       </div>
-      <input type="text" id="pickupNotes" placeholder="Notes (optional) — e.g. Gate 2, Flat 304…"/>
-      <button class="btn btn-primary" id="pickupSubmitBtn">Submit Pickup Request</button>
+
+      <!-- STEP 3: Preview + item name input -->
+      <div class="cam-step hidden" id="camStep3">
+        <div class="preview-wrap">
+          <img id="previewImg" src="" alt="Captured waste item" />
+        </div>
+        <div class="photo-item-entry">
+          <label for="photoItemInput" class="photo-item-label">✏️ What item is this? Type to classify:</label>
+          <div class="photo-item-row">
+            <input type="text" id="photoItemInput" placeholder="e.g. plastic bottle, battery, banana peel…"
+              autocomplete="off" />
+            <button class="btn btn-primary" id="analyzeBtn">🔍 Classify</button>
+          </div>
+          <p class="cam-hint">💡 Type a keyword — partial names like "bottle", "phone", "battery" also work!</p>
+        </div>
+        <div class="preview-actions">
+          <button class="btn btn-ghost" id="retakeBtn">🔄 Retake Photo</button>
+        </div>
+      </div>
+
+      <!-- STEP 4: Result -->
+      <div class="cam-step hidden" id="camStep4">
+        <div class="ai-result-card">
+
+          <div class="ai-result-top">
+            <span class="ai-badge-pill">📸 Photo · Classified</span>
+            <span class="ai-confidence-pill" id="aiConfidencePill">● Database Match</span>
+          </div>
+
+          <div class="ai-result-main">
+            <img id="aiThumb" src="" alt="Classified item" class="ai-thumb" />
+            <div class="ai-result-info">
+              <div class="ai-item-name" id="aiItemName">Item Name</div>
+              <div class="ai-bin-tag" id="aiBinTag">🔵 Dry / Recyclable Bin</div>
+              <span class="result-badge badge-dry ai-result-badge" id="aiResultBadge">DRY</span>
+            </div>
+          </div>
+
+          <div class="ai-description" id="aiDescription"></div>
+          <div class="ai-tip-box" id="aiTipBox"></div>
+
+          <!-- Unknown item voting (shown only when item not in DB) -->
+          <div class="unknown-card hidden" id="photoUnknownBlock">
+            <p>Help us grow the database — vote for the correct bin:</p>
+            <div class="bin-vote-group">
+              <button class="bin-vote photo-bin-vote" data-bin="wet">🟢 Wet</button>
+              <button class="bin-vote photo-bin-vote" data-bin="dry">🔵 Dry</button>
+              <button class="bin-vote photo-bin-vote" data-bin="hazardous">🔴 Hazardous</button>
+              <button class="bin-vote photo-bin-vote" data-bin="ewaste">🟡 E-Waste</button>
+            </div>
+            <p class="vote-thanks hidden" id="photoVoteThanks">🎉 Thanks! +5 XP for contributing!</p>
+          </div>
+
+          <!-- GPS Auto-Tag panel -->
+          <div class="gps-panel">
+            <div class="gps-panel-header">
+              <span>📍 Disposal Location</span>
+              <button class="gps-refresh-btn" id="gpsRefreshBtn">🔄 Refresh GPS</button>
+            </div>
+            <div class="gps-state gps-detecting hidden" id="gpsDetecting">
+              <div class="gps-spinner"></div>
+              <span>Acquiring GPS signal…</span>
+            </div>
+            <div class="gps-state gps-result hidden" id="gpsResult">
+              <div class="gps-address-row">
+                <span class="gps-pin">📍</span>
+                <div>
+                  <div class="gps-address" id="gpsAddress">—</div>
+                  <div class="gps-coords" id="gpsCoords">—</div>
+                </div>
+              </div>
+              <a class="gps-map-btn" id="gpsMapBtn" href="#" target="_blank" rel="noopener">
+                🗺️ Open in Maps
+              </a>
+            </div>
+            <div class="gps-state gps-denied hidden" id="gpsDenied">
+              <span>⚠️ Location access denied.</span>
+              <button class="btn-inline" id="gpsEnableBtn">Try Again</button>
+            </div>
+          </div>
+
+          <div class="ai-actions">
+            <button class="btn btn-confirm" id="aiConfirmBtn" data-bin="dry" data-co2="0">
+              ✅ I Disposed Correctly! (+15 XP)
+            </button>
+            <button class="btn btn-ghost" id="aiReportBtn">🚩 Report Issue</button>
+            <button class="btn btn-ghost" id="aiScanAgainBtn">📸 Scan Another Item</button>
+          </div>
+
+        </div>
+      </div><!-- end camStep4 -->
+
+    </div><!-- end ai-scan-box -->
+  </section>
+
+  <!-- ═══════════ TEXT CLASSIFIER ═══════════ -->
+  <section class="scanner-section" id="scanner">
+    <h2 class="section-title">🔍 Text <span class="accent">Classifier</span></h2>
+    <p class="section-sub">No camera? Type any waste item and get instant guidance.</p>
+
+    <div class="classifier-box">
+      <div class="search-bar">
+        <input type="text" id="wasteInput" placeholder="e.g. banana peel, old phone, paint can…" autocomplete="off" />
+        <button class="btn btn-primary" id="classifyBtn">Classify</button>
+      </div>
+      <div class="quick-chips">
+        <span class="chip" data-item="banana peel">🍌 Banana Peel</span>
+        <span class="chip" data-item="plastic bottle">🥤 Plastic Bottle</span>
+        <span class="chip" data-item="old phone">📱 Old Phone</span>
+        <span class="chip" data-item="newspaper">📰 Newspaper</span>
+        <span class="chip" data-item="battery">🔋 Battery</span>
+        <span class="chip" data-item="cardboard">📦 Cardboard</span>
+        <span class="chip" data-item="medicine bottle">💊 Medicine</span>
+        <span class="chip" data-item="glass bottle">🍾 Glass Bottle</span>
+      </div>
+      <div class="result-card hidden" id="resultCard">
+        <div class="result-header">
+          <div class="result-icon" id="resultIcon">♻️</div>
+          <div>
+            <div class="result-item-name" id="resultItemName">Item</div>
+            <div class="result-bin-label" id="resultBinLabel">Goes in: Dry Bin</div>
+          </div>
+          <span class="result-badge" id="resultBadge">DRY</span>
+        </div>
+        <div class="result-why" id="resultWhy"></div>
+        <div class="result-tip" id="resultTip"></div>
+        <div class="result-actions">
+          <button class="btn btn-confirm" id="confirmBtn">✅ Disposed Correctly! (+10 XP)</button>
+          <button class="btn btn-ghost" id="reportBtn">🚩 Unsure / Report</button>
+        </div>
+      </div>
+      <div class="unknown-card hidden" id="unknownCard">
+        <div class="unknown-icon">🤔</div>
+        <h3>We don't know this item yet!</h3>
+        <p>Help us grow the database — vote for the correct bin:</p>
+        <div class="bin-vote-group">
+          <button class="bin-vote" data-bin="wet">🟢 Wet</button>
+          <button class="bin-vote" data-bin="dry">🔵 Dry</button>
+          <button class="bin-vote" data-bin="hazardous">🔴 Hazardous</button>
+          <button class="bin-vote" data-bin="ewaste">🟡 E-Waste</button>
+        </div>
+        <p class="vote-thanks hidden" id="voteThanks">🎉 Thanks! +5 XP for contributing!</p>
+      </div>
     </div>
-    <div class="pickup-success hidden" id="pickupSuccess">
-      ✅ Request submitted with your GPS location! You'll be notified 2 hrs before pickup. (+5 XP)
+  </section>
+
+  <!-- ═══════════ DAILY CHALLENGE ═══════════ -->
+  <section class="challenge-section">
+    <div class="challenge-banner">
+      <div class="challenge-left">
+        <div class="challenge-tag">🔥 Daily Challenge</div>
+        <h3>Classify 5 items today</h3>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar" id="challengeBar" style="width:0%"></div>
+        </div>
+        <p id="challengeProgress">0 / 5 completed</p>
+      </div>
+      <div class="challenge-reward">
+        <div class="reward-circle">🏆</div>
+        <div>+50 XP<br /><small>Bonus Reward</small></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ DASHBOARD ═══════════ -->
+  <section class="dashboard-section" id="dashboard">
+    <h2 class="section-title">📊 Your <span class="accent">Dashboard</span></h2>
+    <div class="dash-grid">
+      <div class="dash-card">
+        <div class="dash-card-title">Total XP</div>
+        <div class="dash-big" id="dashXP">0</div>
+        <div class="dash-sub">Level: <span id="dashLevel">Beginner</span></div>
+        <div class="level-bar-wrap">
+          <div class="level-bar" id="levelBar" style="width:0%"></div>
+        </div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-card-title">🔥 Streak</div>
+        <div class="dash-big" id="dashStreak">0</div>
+        <div class="dash-sub">days in a row</div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-card-title">Items Logged</div>
+        <div class="dash-big" id="dashItems">0</div>
+        <div class="dash-sub">Total confirmed</div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-card-title">🌱 CO₂ Saved</div>
+        <div class="dash-big" id="dashCO2">0 g</div>
+        <div class="dash-sub">By correct disposal</div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-card-title">Waste Breakdown</div>
+        <div class="bar-chart">
+          <div class="bar-wrap">
+            <div class="bar-col wet-col" id="barWet" style="height:4px"></div><span>Wet</span>
+          </div>
+          <div class="bar-wrap">
+            <div class="bar-col dry-col" id="barDry" style="height:4px"></div><span>Dry</span>
+          </div>
+          <div class="bar-wrap">
+            <div class="bar-col haz-col" id="barHaz" style="height:4px"></div><span>Haz</span>
+          </div>
+          <div class="bar-wrap">
+            <div class="bar-col ew-col" id="barEW" style="height:4px"></div><span>E-Waste</span>
+          </div>
+        </div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-card-title">🏅 Badges</div>
+        <div class="badge-grid" id="badgeGrid">
+          <div class="badge locked" title="Log 1 item">🌱</div>
+          <div class="badge locked" title="Log 10 items">⚔️</div>
+          <div class="badge locked" title="7-day streak">👑</div>
+          <div class="badge locked" title="5 dry items">♻️</div>
+          <div class="badge locked" title="5 wet items">🌿</div>
+          <div class="badge locked" title="500 XP">🏆</div>
+          <div class="badge locked" title="5 photo scans">📸</div>
+          <div class="badge locked" title="3 GPS reports">📍</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ LEADERBOARD ═══════════ -->
+  <section class="leaderboard-section" id="leaderboard">
+    <h2 class="section-title">🏆 Community <span class="accent">Leaderboard</span></h2>
+    <p class="section-sub">Compete with your society, hostel block, or school section.</p>
+    <div class="lb-tabs">
+      <button class="lb-tab active" data-tab="individual">Individual</button>
+      <button class="lb-tab" data-tab="community">Community</button>
+    </div>
+    <div class="lb-table" id="lbTable"></div>
+  </section>
+
+  <!-- ═══════════ PICKUP SCHEDULE ═══════════ -->
+  <section class="schedule-section" id="schedule">
+    <h2 class="section-title">🚛 Pickup <span class="accent">Schedule</span></h2>
+    <p class="section-sub">Know when the truck arrives — GPS auto-fills your pickup address.</p>
+    <div class="schedule-grid" id="scheduleGrid"></div>
+
+    <div class="extra-pickup">
+      <h3>📦 Request Extra Pickup</h3>
+      <p class="pickup-sub">📍 Your location will be auto-detected — no typing needed!</p>
+      <div class="pickup-form">
+        <select id="pickupType">
+          <option value="">Select waste type…</option>
+          <option value="bulk">Bulk / Large Items</option>
+          <option value="hazardous">Hazardous Waste</option>
+          <option value="ewaste">E-Waste Drive</option>
+          <option value="garden">Garden / Green Waste</option>
+        </select>
+        <div class="pickup-gps-row">
+          <button class="btn btn-loc" id="detectPickupLocBtn">📍 Auto-Detect My Location</button>
+          <div class="pickup-loc-detected hidden" id="pickupLocDetected">
+            <span class="loc-tick">✅</span>
+            <span id="pickupLocText">Detecting…</span>
+            <button class="btn-redetect" id="redetectPickupBtn" title="Re-detect">🔄</button>
+          </div>
+        </div>
+        <input type="text" id="pickupNotes" placeholder="Notes (optional) — e.g. Gate 2, Flat 304…" />
+        <button class="btn btn-primary" id="pickupSubmitBtn">Submit Pickup Request</button>
+      </div>
+      <div class="pickup-success hidden" id="pickupSuccess">
+        ✅ Request submitted with your GPS location! You'll be notified 2 hrs before pickup. (+5 XP)
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ FOOTER ═══════════ -->
+  <footer class="footer">
+    <div class="footer-logo">♻️ WasteWise</div>
+    <p>Built for Techathon 2026 · Made with 💚 by First-Year Engineers</p>
+    <p class="footer-stack">HTML · CSS · Vanilla JS · Geolocation API · OpenStreetMap</p>
+  </footer>
+
+  <!-- Overlays -->
+  <div class="toast hidden" id="toast"></div>
+
+  <div class="popup-overlay hidden" id="badgePopup">
+    <div class="popup-box">
+      <div class="popup-icon" id="popupIcon">🏅</div>
+      <h3>Badge Unlocked!</h3>
+      <p id="popupBadgeName"></p>
+      <button class="btn btn-primary" id="popupClose">Awesome! 🎉</button>
     </div>
   </div>
-</section>
-
-<!-- ═══════════ FOOTER ═══════════ -->
-<footer class="footer">
-  <div class="footer-logo">♻️ WasteWise</div>
-  <p>Built for Techathon 2026 · Made with 💚 by First-Year Engineers</p>
-  <p class="footer-stack">HTML · CSS · Vanilla JS · Geolocation API · OpenStreetMap</p>
-</footer>
-
-<!-- Overlays -->
-<div class="toast hidden" id="toast"></div>
-
-<div class="popup-overlay hidden" id="badgePopup">
-  <div class="popup-box">
-    <div class="popup-icon" id="popupIcon">🏅</div>
-    <h3>Badge Unlocked!</h3>
-    <p id="popupBadgeName"></p>
-    <button class="btn btn-primary" id="popupClose">Awesome! 🎉</button>
-  </div>
-</div>
 
 
-<script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
+
 </html>
